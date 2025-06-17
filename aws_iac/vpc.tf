@@ -38,3 +38,31 @@ resource "aws_route" "route_igw" {
   gateway_id             = aws_internet_gateway.main_igw.id
   destination_cidr_block = "0.0.0.0/0"
 }
+
+resource "aws_route" "route_vgw" {
+  route_table_id         = aws_route_table.main_priv_rtb.id
+  gateway_id             = aws_vpn_gateway.main_vgw.id 
+  destination_cidr_block = "0.0.0.0/16"
+}
+
+resource "aws_vpn_gateway" "main_vgw" {
+  vpc_id = aws_vpc.main_vpc.id
+  tags = {
+    Name = "VGW-MULTICLOUD"
+  }
+}
+
+resource "aws_customer_gateway" "main_cgw" {
+  ip_address = "172.210.122.20"
+  bgp_asn    = "65000"
+  type       = "ipsec.1"
+  tags = {
+    Name = "CGW-MULTICLOUD"
+  }
+}
+
+resource "aws_vpn_connection" "main_vpn_conn" {
+  type                = "ipsec.1"
+  vpn_gateway_id      = aws_vpn_gateway.main_vgw.id
+  customer_gateway_id = aws_customer_gateway.main_cgw.id
+}
