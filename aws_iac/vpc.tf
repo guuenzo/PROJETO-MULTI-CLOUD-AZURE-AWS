@@ -39,12 +39,6 @@ resource "aws_route" "route_igw" {
   destination_cidr_block = "0.0.0.0/0"
 }
 
-resource "aws_route" "route_vgw" {
-  route_table_id         = aws_route_table.main_priv_rtb.id
-  gateway_id             = aws_vpn_gateway.main_vgw.id 
-  destination_cidr_block = "0.0.0.0/16"
-}
-
 resource "aws_vpn_gateway" "main_vgw" {
   vpc_id = aws_vpc.main_vpc.id
   tags = {
@@ -52,8 +46,14 @@ resource "aws_vpn_gateway" "main_vgw" {
   }
 }
 
+resource "aws_route" "route_vgw" {
+  route_table_id         = aws_route_table.main_priv_rtb.id
+  gateway_id             = aws_vpn_gateway.main_vgw.id
+  destination_cidr_block = "10.0.0.0/16"
+}
+
 resource "aws_customer_gateway" "main_cgw" {
-  ip_address = "172.210.122.20"
+  ip_address = var.cgw_ip
   bgp_asn    = "65000"
   type       = "ipsec.1"
   tags = {
@@ -65,4 +65,10 @@ resource "aws_vpn_connection" "main_vpn_conn" {
   type                = "ipsec.1"
   vpn_gateway_id      = aws_vpn_gateway.main_vgw.id
   customer_gateway_id = aws_customer_gateway.main_cgw.id
+  static_routes_only  = true
+}
+
+resource "aws_vpn_gateway_route_propagation" "propagation" {
+  vpn_gateway_id = aws_vpn_gateway.main_vgw.id
+  route_table_id = aws_route_table.main_priv_rtb.id
 }
