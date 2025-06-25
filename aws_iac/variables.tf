@@ -3,5 +3,13 @@ variable "aws_region" {
 }
 
 variable "cgw_ip" {
-  default = "172.210.122.20"
+  default = "4.157.240.123"
+}
+
+variable "cidrblock_azure" {
+  default = "10.0.0.0/16"
+}
+
+variable "awslnx_ami" {
+  default = "ami-09e6f87a47903347c"
 }

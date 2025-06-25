@@ -1,6 +1,11 @@
 resource "aws_security_group" "main_sg" {
-  name   = "MULTICLOUD-SG"
   vpc_id = aws_vpc.main_vpc.id
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [var.cidrblock_azure]
+  }
   ingress {
     from_port   = 22
     to_port     = 22
@@ -13,16 +18,19 @@ resource "aws_security_group" "main_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  tags = {
+    Name = "MULTICLOUD-SG"
+  }
 }
 
 resource "aws_instance" "main_instance" {
-  key_name                    = "vockey"
-  subnet_id                   = aws_subnet.main_priv_sub.id
   associate_public_ip_address = true
-  ami                         = "ami-09e6f87a47903347c"
-  instance_type               = "t2.micro"
+  ami                         = var.awslnx_ami
+  subnet_id                   = aws_subnet.main_sub.id
   security_groups             = [aws_security_group.main_sg.id]
+  instance_type               = "t2.micro"
+  key_name                    = "vockey"
   tags = {
-    Name = "MULTICLOUD-EC2"
+    Name = "INSTANCE-MULTICLOUD"
   }
 }
